@@ -12,7 +12,7 @@ from BrandrdXMusic.utils.database import add_served_chat, get_assistant
 async def help(client: Client, message: Message):
     await message.reply_photo(
         photo=f"https://files.catbox.moe/xgenr4.jpg",
-        caption=f""" 𝐟𝐮𝐥𝐥 𝐟𝐢𝐱 𝐫𝐞𝐩𝐨 𝐜𝐡𝐚𝐡𝐢𝐲𝐞 𝐭𝐨 𝐩𝐚𝐡𝐥𝐞 𝐧𝐨𝐛𝐢𝐭𝐚 𝐤𝐨 𝐩𝐚𝐩𝐚 𝐛𝐨𝐥 𝐤𝐞 𝐚𝐚 """,
+        caption=f""" contract here if you want full rapo  """,
         reply_markup=InlineKeyboardMarkup(
             [
                 [
