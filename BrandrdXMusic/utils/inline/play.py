@@ -3,184 +3,126 @@ from pyrogram.types import InlineKeyboardButton
 from BrandrdXMusic.utils.formatters import time_to_seconds
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#              PROGRESS BAR ENGINE
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ──────────────────────────────────────────────────────
+#  🎧 MINIMAL FONT (clean + safe)
+# ──────────────────────────────────────────────────────
 
-_BAR_FILLED = "█"
-_BAR_HALF   = "▓"
-_BAR_EMPTY  = "░"
-_BAR_LEN    = 10
-
-def _build_bar(percentage: float) -> str:
-    """Smooth 10-slot progress bar with half-step indicator."""
-    filled = int(percentage / 10)
-    half   = 1 if (percentage % 10) >= 5 else 0
-    empty  = _BAR_LEN - filled - half
-    return _BAR_FILLED * filled + _BAR_HALF * half + _BAR_EMPTY * empty
+def _mono(text: str) -> str:
+    return ''.join(chr(0x1D7F6 + ord(c) - 48) if c.isdigit() else c for c in text)
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#              TRACK MARKUP
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ──────────────────────────────────────────────────────
+#  🎵 SMOOTH PROGRESS BAR
+# ──────────────────────────────────────────────────────
 
-def track_markup(_, videoid, user_id, channel, fplay):
-    """Choose stream mode: Audio-only or Video."""
-    return [
-        [
-            InlineKeyboardButton(
-                text=f"♫  {_['P_B_1']}",
-                callback_data=f"MusicStream {videoid}|{user_id}|a|{channel}|{fplay}",
-            ),
-            InlineKeyboardButton(
-                text=f"◈  {_['P_B_2']}",
-                callback_data=f"MusicStream {videoid}|{user_id}|v|{channel}|{fplay}",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text=f"✕  {_['CLOSE_BUTTON']}",
-                callback_data=f"forceclose {videoid}|{user_id}",
-            ),
-        ],
-    ]
+def _bar(played, total):
+    played_sec = time_to_seconds(played)
+    total_sec = time_to_seconds(total) or 1
+    pct = played_sec / total_sec
+
+    filled = int(pct * 12)
+    return "▬" * filled + "🔘" + "▬" * (12 - filled)
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#         STREAM MARKUP  ·  WITH TIMER
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ──────────────────────────────────────────────────────
+#  🎧 STREAM UI (ULTIMATE)
+# ──────────────────────────────────────────────────────
 
-def stream_markup_timer(_, vidid, chat_id, played, dur):
-    """Live playback panel with smooth progress bar."""
-    played_sec    = time_to_seconds(played)
-    duration_sec  = time_to_seconds(dur) or 1
-    percentage    = min((played_sec / duration_sec) * 100, 100)
-    bar           = _build_bar(percentage)
-    pct_label     = f"{math.floor(percentage)}%"
+def stream_markup_timer(_, vidid, chat_id, played, dur, loop=False, shuffle=False, volume=100):
+
+    bar = _bar(played, dur)
 
     return [
-        # ── Progress Row ──────────────────────────────
+
+        # 🎵 PROGRESS LINE
         [
             InlineKeyboardButton(
-                text=f"◷  {played}  {bar}  {dur}  ·  {pct_label}",
-                callback_data="GetTimer",
+                text=f"⌬ {_mono(played)}  {bar}  {_mono(dur)}",
+                callback_data="progress"
             )
         ],
-        # ── Primary Controls ──────────────────────────
+
+        # ⏩ SEEK CONTROL
         [
-            InlineKeyboardButton(text="⏮  Replay",  callback_data=f"ADMIN Replay|{chat_id}"),
-            InlineKeyboardButton(text="⏸  Pause",   callback_data=f"ADMIN Pause|{chat_id}"),
-            InlineKeyboardButton(text="⏭  Skip",    callback_data=f"ADMIN Skip|{chat_id}"),
+            InlineKeyboardButton("⏪ 10s", callback_data=f"ADMIN SeekBack|{chat_id}"),
+            InlineKeyboardButton("⏩ 10s", callback_data=f"ADMIN SeekFwd|{chat_id}"),
         ],
-        # ── Secondary Controls ────────────────────────
+
+        # 🎧 MAIN CONTROLS (CENTERED FEEL)
         [
-            InlineKeyboardButton(text="▶  Resume",  callback_data=f"ADMIN Resume|{chat_id}"),
-            InlineKeyboardButton(text="⏹  Stop",    callback_data=f"ADMIN Stop|{chat_id}"),
+            InlineKeyboardButton("⏮", callback_data=f"ADMIN Replay|{chat_id}"),
+            InlineKeyboardButton("⏸", callback_data=f"ADMIN Pause|{chat_id}"),
+            InlineKeyboardButton("⏭", callback_data=f"ADMIN Skip|{chat_id}"),
         ],
-        # ── Dismiss ───────────────────────────────────
+
         [
-            InlineKeyboardButton(text=f"✕  {_['CLOSE_BUTTON']}", callback_data="close"),
+            InlineKeyboardButton("▶", callback_data=f"ADMIN Resume|{chat_id}"),
+            InlineKeyboardButton("⏹", callback_data=f"ADMIN Stop|{chat_id}"),
+        ],
+
+        # 🎛️ EXTRA CONTROLS (SPOTIFY STYLE)
+        [
+            InlineKeyboardButton("🔁", callback_data=f"ADMIN ToggleLoop|{chat_id}"),
+            InlineKeyboardButton("🔀", callback_data=f"ADMIN ToggleShuffle|{chat_id}"),
+            InlineKeyboardButton(f"🔊 {_mono(str(volume))}%", callback_data=f"ADMIN Volume|{chat_id}"),
+        ],
+
+        # 🔊 VOLUME CONTROL
+        [
+            InlineKeyboardButton("🔉", callback_data=f"ADMIN VolDown|{chat_id}"),
+            InlineKeyboardButton("🔊", callback_data=f"ADMIN VolUp|{chat_id}"),
+        ],
+
+        # ❌ CLOSE
+        [
+            InlineKeyboardButton("✖ Close", callback_data="close"),
         ],
     ]
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#         STREAM MARKUP  ·  NO TIMER
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ──────────────────────────────────────────────────────
+#  🎧 SIMPLE UI (NO TIMER)
+# ──────────────────────────────────────────────────────
 
 def stream_markup(_, videoid, chat_id):
-    """Compact playback panel without progress bar."""
     return [
         [
-            InlineKeyboardButton(text="⏮  Replay",  callback_data=f"ADMIN Replay|{chat_id}"),
-            InlineKeyboardButton(text="⏸  Pause",   callback_data=f"ADMIN Pause|{chat_id}"),
-            InlineKeyboardButton(text="⏭  Skip",    callback_data=f"ADMIN Skip|{chat_id}"),
+            InlineKeyboardButton("⏮", callback_data=f"ADMIN Replay|{chat_id}"),
+            InlineKeyboardButton("⏸", callback_data=f"ADMIN Pause|{chat_id}"),
+            InlineKeyboardButton("⏭", callback_data=f"ADMIN Skip|{chat_id}"),
         ],
         [
-            InlineKeyboardButton(text="▶  Resume",  callback_data=f"ADMIN Resume|{chat_id}"),
-            InlineKeyboardButton(text="⏹  Stop",    callback_data=f"ADMIN Stop|{chat_id}"),
+            InlineKeyboardButton("▶", callback_data=f"ADMIN Resume|{chat_id}"),
+            InlineKeyboardButton("⏹", callback_data=f"ADMIN Stop|{chat_id}"),
         ],
         [
-            InlineKeyboardButton(text=f"✕  {_['CLOSE_BUTTON']}", callback_data="close"),
+            InlineKeyboardButton("🔁", callback_data=f"ADMIN ToggleLoop|{chat_id}"),
+            InlineKeyboardButton("🔀", callback_data=f"ADMIN ToggleShuffle|{chat_id}"),
+        ],
+        [
+            InlineKeyboardButton("✖ Close", callback_data="close"),
         ],
     ]
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#              PLAYLIST MARKUP
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ──────────────────────────────────────────────────────
+#  📋 QUEUE UI
+# ──────────────────────────────────────────────────────
 
-def playlist_markup(_, videoid, user_id, ptype, channel, fplay):
+def queue_markup(_, chat_id, track_no: int, total: int):
     return [
         [
             InlineKeyboardButton(
-                text=f"♫  {_['P_B_1']}",
-                callback_data=f"Playlists {videoid}|{user_id}|{ptype}|a|{channel}|{fplay}",
-            ),
-            InlineKeyboardButton(
-                text=f"◈  {_['P_B_2']}",
-                callback_data=f"Playlists {videoid}|{user_id}|{ptype}|v|{channel}|{fplay}",
+                f"🎧 Queue {_mono(f'{track_no}/{total}')}",
+                callback_data=f"ADMIN QueueInfo|{chat_id}"
             ),
         ],
         [
-            InlineKeyboardButton(
-                text=f"✕  {_['CLOSE_BUTTON']}",
-                callback_data=f"forceclose {videoid}|{user_id}",
-            ),
-        ],
-    ]
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#             LIVESTREAM MARKUP
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-def livestream_markup(_, videoid, user_id, mode, channel, fplay):
-    return [
-        [
-            InlineKeyboardButton(
-                text=f"⦿  {_['P_B_3']}  ·  LIVE",
-                callback_data=f"LiveStream {videoid}|{user_id}|{mode}|{channel}|{fplay}",
-            ),
+            InlineKeyboardButton("⏮", callback_data=f"ADMIN PrevTrack|{chat_id}"),
+            InlineKeyboardButton("⏭", callback_data=f"ADMIN NextTrack|{chat_id}"),
         ],
         [
-            InlineKeyboardButton(
-                text=f"✕  {_['CLOSE_BUTTON']}",
-                callback_data=f"forceclose {videoid}|{user_id}",
-            ),
-        ],
-    ]
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#              SLIDER MARKUP
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-def slider_markup(_, videoid, user_id, query, query_type, channel, fplay):
-    short_query = query[:20]
-    return [
-        [
-            InlineKeyboardButton(
-                text=f"♫  {_['P_B_1']}",
-                callback_data=f"MusicStream {videoid}|{user_id}|a|{channel}|{fplay}",
-            ),
-            InlineKeyboardButton(
-                text=f"◈  {_['P_B_2']}",
-                callback_data=f"MusicStream {videoid}|{user_id}|v|{channel}|{fplay}",
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text="◀  Prev",
-                callback_data=f"slider B|{query_type}|{short_query}|{user_id}|{channel}|{fplay}",
-            ),
-            InlineKeyboardButton(
-                text=f"✕  {_['CLOSE_BUTTON']}",
-                callback_data=f"forceclose {videoid}|{user_id}",
-            ),
-            InlineKeyboardButton(
-                text="Next  ▶",
-                callback_data=f"slider F|{query_type}|{short_query}|{user_id}|{channel}|{fplay}",
-            ),
+            InlineKeyboardButton("🗑", callback_data=f"ADMIN ClearQueue|{chat_id}"),
+            InlineKeyboardButton("✖", callback_data="close"),
         ],
     ]
