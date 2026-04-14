@@ -1,5 +1,3 @@
-Here's your code exactly as-is:
-
 ```python
 import math
 from pyrogram.types import InlineKeyboardButton
@@ -63,13 +61,18 @@ def stream_markup_timer(_, vidid, chat_id, played, dur):
             )
         ],
         [
+            InlineKeyboardButton(text="⏮ 10s", callback_data=f"ADMIN SeekBack|{chat_id}"),
             InlineKeyboardButton(text="Resume ▷", callback_data=f"ADMIN Resume|{chat_id}"),
             InlineKeyboardButton(text="Pause II", callback_data=f"ADMIN Pause|{chat_id}"),
-            InlineKeyboardButton(text="Skip ‣‣I", callback_data=f"ADMIN Skip|{chat_id}"),
+            InlineKeyboardButton(text="10s ⏭", callback_data=f"ADMIN SeekForward|{chat_id}"),
         ],
         [
+            InlineKeyboardButton(text="Skip ‣‣I", callback_data=f"ADMIN Skip|{chat_id}"),
             InlineKeyboardButton(text="Replay ↻", callback_data=f"ADMIN Replay|{chat_id}"),
             InlineKeyboardButton(text="Stop ▢", callback_data=f"ADMIN Stop|{chat_id}"),
+        ],
+        [
+            InlineKeyboardButton(text="🎬 Video Play", callback_data=f"ADMIN VideoPlay|{chat_id}"),
         ],
         [
             InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close")
@@ -81,13 +84,18 @@ def stream_markup_timer(_, vidid, chat_id, played, dur):
 def stream_markup(_, videoid, chat_id):
     return [
         [
+            InlineKeyboardButton(text="⏮ 10s", callback_data=f"ADMIN SeekBack|{chat_id}"),
             InlineKeyboardButton(text="Resume ▷", callback_data=f"ADMIN Resume|{chat_id}"),
             InlineKeyboardButton(text="Pause II", callback_data=f"ADMIN Pause|{chat_id}"),
-            InlineKeyboardButton(text="Skip ‣‣I", callback_data=f"ADMIN Skip|{chat_id}"),
+            InlineKeyboardButton(text="10s ⏭", callback_data=f"ADMIN SeekForward|{chat_id}"),
         ],
         [
+            InlineKeyboardButton(text="Skip ‣‣I", callback_data=f"ADMIN Skip|{chat_id}"),
             InlineKeyboardButton(text="Replay ↻", callback_data=f"ADMIN Replay|{chat_id}"),
             InlineKeyboardButton(text="Stop ▢", callback_data=f"ADMIN Stop|{chat_id}"),
+        ],
+        [
+            InlineKeyboardButton(text="🎬 Video Play", callback_data=f"ADMIN VideoPlay|{chat_id}"),
         ],
         [
             InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close")
