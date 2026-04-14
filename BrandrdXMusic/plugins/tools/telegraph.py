@@ -5,29 +5,36 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from BrandrdXMusic import app
 
 
-# 🔥 NEW UPLOADER (NO ACCOUNT NEEDED)
-def upload_file(file_path):
+# 🔥 UPLOADERS
+
+def upload_0x0(file_path):
     try:
         with open(file_path, "rb") as f:
-            response = requests.post("https://0x0.st", files={"file": f})
+            r = requests.post("https://0x0.st", files={"file": f})
+        if r.status_code == 200:
+            return True, r.text.strip()
+        return False, "0x0 failed"
+    except Exception:
+        return False, "0x0 error"
 
-        if response.status_code == 200:
-            link = response.text.strip()
-            return True, link
-        else:
-            return False, f"Error {response.status_code}"
 
-    except Exception as e:
-        return False, str(e)
+def upload_transfer(file_path):
+    try:
+        filename = os.path.basename(file_path)
+        with open(file_path, "rb") as f:
+            r = requests.put(f"https://transfer.sh/{filename}", data=f)
+        if r.status_code == 200:
+            return True, r.text.strip()
+        return False, "transfer failed"
+    except Exception:
+        return False, "transfer error"
 
 
 @app.on_message(filters.command(["tgm", "tgt", "telegraph", "tl"]))
 async def get_link_group(client, message):
 
     if not message.reply_to_message:
-        return await message.reply_text(
-            "Reply to a media file to convert into link!"
-        )
+        return await message.reply_text("Reply to a media file!")
 
     media = message.reply_to_message
 
@@ -55,25 +62,24 @@ async def get_link_group(client, message):
 
         await text.edit_text("📤 Uploading...")
 
-        success, upload_path = upload_file(local_path)
+        # 🔥 TRY 0x0
+        success, link = upload_0x0(local_path)
+
+        # 🔁 FALLBACK → transfer.sh
+        if not success:
+            await text.edit_text("⚠️ Switching server...")
+            success, link = upload_transfer(local_path)
 
         if success:
             await text.edit_text(
-                f"✅ Uploaded Successfully!\n\n🔗 {upload_path}",
+                f"✅ Uploaded Successfully!\n\n🔗 {link}",
                 reply_markup=InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton(
-                                "Open Link",
-                                url=upload_path,
-                            )
-                        ]
-                    ]
+                    [[InlineKeyboardButton("Open Link", url=link)]]
                 ),
                 disable_web_page_preview=True
             )
         else:
-            await text.edit_text(f"❌ Upload failed:\n{upload_path}")
+            await text.edit_text("❌ All upload servers failed!")
 
     except Exception as e:
         await text.edit_text(f"❌ Error:\n{e}")
