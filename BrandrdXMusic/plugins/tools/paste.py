@@ -92,7 +92,7 @@ async def paste_func(_, message):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# 🛡️ RAW EDIT GUARDIAN (PRO VERSION)
+# 🛡️ RAW EDIT GUARDIAN (WORKS EVERYWHERE)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 @app.on_raw_update()
@@ -103,13 +103,13 @@ async def raw_edit_handler(client: Client, update, users, chats):
 
     message = update.message
 
-    # Only supergroups
+    # ✅ Only handle supergroups
     if not isinstance(message.peer_id, types.PeerChannel):
         return
 
     chat_id = message.peer_id.channel_id
 
-    # Get user
+    # ❌ Ignore if no sender
     if not message.from_id or not hasattr(message.from_id, "user_id"):
         return
 
@@ -119,56 +119,30 @@ async def raw_edit_handler(client: Client, update, users, chats):
     if not text:
         return
 
-    # Try to get user + chat info
-    try:
-        user = await client.get_users(user_id)
-        full_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
-    except:
-        full_name = "Unknown User"
-
-    try:
-        chat = await client.get_chat(chat_id)
-        chat_name = chat.title
-    except:
-        chat_name = "Unknown Chat"
-
     try:
         # 🧹 DELETE MESSAGE
         await client.delete_messages(chat_id, message.id)
 
-        # 📂 LOG MESSAGE
+        # 📂 SEND LOG
         log_msg = await client.send_message(
             LOG_GROUP_ID,
             f"🛡️ **Edit Log**\n\n"
-            f"👤 **User:** {full_name}\n"
-            f"🆔 **ID:** `{user_id}`\n"
-            f"💬 **Chat:** {chat_name}\n\n"
-            f"✏️ **Edited Message:**\n`{text}`"
+            f"👤 User ID: `{user_id}`\n"
+            f"💬 Chat ID: `{chat_id}`\n\n"
+            f"✏️ Edited Message:\n`{text}`"
         )
 
-        # 🔗 LINK
+        # 🔗 CREATE LINK
         log_link = f"https://t.me/{LOG_CHANNEL_USERNAME}/{log_msg.id}"
 
-        # 📢 ALERT MESSAGE (STYLED)
-        alert = (
-            "╔══════════════════════════╗\n"
-            "║   🛡️  GROUP GUARDIAN  🛡️   ║\n"
-            "╚══════════════════════════╝\n\n"
-            "⚠️ **Edited Message Deleted!**\n\n"
-            f"👤 **User:** {full_name}\n"
-            f"🆔 **User ID:** `{user_id}`\n"
-            f"💬 **Chat:** {chat_name}\n\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"✏️ **Edited Message:**\n`{text}`\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"🔗 **[View Log]({log_link})**"
-        )
-
+        # 📢 SEND ALERT IN GROUP
         await client.send_message(
             chat_id,
-            alert,
-            disable_web_page_preview=True,
-            disable_notification=True
+            f"⚠️ **Edited Message Deleted!**\n\n"
+            f"👤 User ID: `{user_id}`\n\n"
+            f"✏️ Message:\n`{text}`\n\n"
+            f"🔗 [View Log]({log_link})",
+            disable_web_page_preview=True
         )
 
     except Exception as e:
