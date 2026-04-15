@@ -3,8 +3,9 @@ import os
 import re
 
 import aiofiles
-from pyrogram import filters
+from pyrogram import filters, Client
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pyrogram.raw import types
 from aiohttp import ClientSession
 
 from BrandrdXMusic import app
@@ -16,7 +17,7 @@ from BrandrdXMusic.utils.pastebin import HottyBin
 # ⚙️ LOG SETTINGS
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-LOG_GROUP_ID = -1002387986267   # 🔴 PUT YOUR LOG CHANNEL ID
+LOG_GROUP_ID = -1002150805769   # 🔴 PUT YOUR LOG CHANNEL ID
 LOG_CHANNEL_USERNAME = "L4inkk"  # 🔴 WITHOUT @
 
 
@@ -91,61 +92,84 @@ async def paste_func(_, message):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# 🛡️ EDIT GUARDIAN + LOG SYSTEM
+# 🛡️ RAW EDIT GUARDIAN (PRO VERSION)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-@app.on_edited_message(filters.group & ~filters.bot & ~filters.channel)
-async def edit_watcher(_, message: Message):
-    user = message.from_user
-    if not user:
+@app.on_raw_update()
+async def raw_edit_handler(client: Client, update, users, chats):
+
+    if not isinstance(update, types.UpdateEditMessage):
         return
 
-    new_content = message.text or message.caption
+    message = update.message
 
-    if not new_content:
+    # Only supergroups
+    if not isinstance(message.peer_id, types.PeerChannel):
         return
 
-    first = user.first_name or ""
-    last = user.last_name or ""
-    full_name = f"{first} {last}".strip() or "Unknown"
+    chat_id = message.peer_id.channel_id
+
+    # Get user
+    if not message.from_id or not hasattr(message.from_id, "user_id"):
+        return
+
+    user_id = message.from_id.user_id
+    text = message.message
+
+    if not text:
+        return
+
+    # Try to get user + chat info
+    try:
+        user = await client.get_users(user_id)
+        full_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
+    except:
+        full_name = "Unknown User"
 
     try:
-        # 🧹 DELETE EDITED MESSAGE
-        await message.delete()
+        chat = await client.get_chat(chat_id)
+        chat_name = chat.title
+    except:
+        chat_name = "Unknown Chat"
 
-        # 📂 SEND LOG MESSAGE
-        log_msg = await app.send_message(
+    try:
+        # 🧹 DELETE MESSAGE
+        await client.delete_messages(chat_id, message.id)
+
+        # 📂 LOG MESSAGE
+        log_msg = await client.send_message(
             LOG_GROUP_ID,
             f"🛡️ **Edit Log**\n\n"
-            f"👤 User: {full_name}\n"
-            f"🆔 ID: `{user.id}`\n"
-            f"💬 Chat: `{message.chat.title}`\n\n"
-            f"✏️ Edited Message:\n`{new_content}`"
+            f"👤 **User:** {full_name}\n"
+            f"🆔 **ID:** `{user_id}`\n"
+            f"💬 **Chat:** {chat_name}\n\n"
+            f"✏️ **Edited Message:**\n`{text}`"
         )
 
-        # 🔗 GENERATE LOG LINK
+        # 🔗 LINK
         log_link = f"https://t.me/{LOG_CHANNEL_USERNAME}/{log_msg.id}"
 
-        # 📢 SEND ALERT IN GROUP
+        # 📢 ALERT MESSAGE (STYLED)
         alert = (
             "╔══════════════════════════╗\n"
-            "║  🛡️  ɢʀᴏᴜᴘ ɢᴜᴀʀᴅɪᴀɴ  🛡️  ║\n"
+            "║   🛡️  GROUP GUARDIAN  🛡️   ║\n"
             "╚══════════════════════════╝\n\n"
-            f"⚠️ **Edited Message Deleted!**\n\n"
-            f"👤 User : {full_name}\n"
-            f"🆔 ID : `{user.id}`\n\n"
+            "⚠️ **Edited Message Deleted!**\n\n"
+            f"👤 **User:** {full_name}\n"
+            f"🆔 **User ID:** `{user_id}`\n"
+            f"💬 **Chat:** {chat_name}\n\n"
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"✏️ Edited Message:\n`{new_content}`\n"
+            f"✏️ **Edited Message:**\n`{text}`\n"
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"🔗 [View Log]({log_link})"
+            f"🔗 **[View Log]({log_link})**"
         )
 
-        await app.send_message(
-            message.chat.id,
+        await client.send_message(
+            chat_id,
             alert,
-            disable_notification=True,
-            disable_web_page_preview=True
+            disable_web_page_preview=True,
+            disable_notification=True
         )
 
     except Exception as e:
-        print(e)
+        print("RAW ERROR:", e)
