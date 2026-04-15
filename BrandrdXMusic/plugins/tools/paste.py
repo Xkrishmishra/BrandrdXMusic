@@ -16,8 +16,8 @@ from BrandrdXMusic.utils.pastebin import HottyBin
 # ⚙️ LOG SETTINGS
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-LOG_GROUP_ID = -100XXXXXXXXXX   # 🔴 PUT YOUR LOG CHANNEL ID
-LOG_CHANNEL_USERNAME = "yourchannelusername"  # 🔴 WITHOUT @
+LOG_GROUP_ID = -1002387986267   # 🔴 PUT YOUR LOG CHANNEL ID
+LOG_CHANNEL_USERNAME = "L4inkk"  # 🔴 WITHOUT @
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
