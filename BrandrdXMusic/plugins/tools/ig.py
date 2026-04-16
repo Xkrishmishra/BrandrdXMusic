@@ -1,57 +1,65 @@
-import requests
+import os
 import re
+import asyncio
+import yt_dlp
 from pyrogram import filters
-
 from BrandrdXMusic import app
 
+# Ensure download directory exists
+DOWNLOAD_DIR = 'downloads'
+if not os.path.exists(DOWNLOAD_DIR):
+    os.makedirs(DOWNLOAD_DIR)
+
+def download_video(url):
+    """Synchronous function to handle yt-dlp download"""
+    ydl_opts = {
+        'format': 'best',
+        'outtmpl': f'{DOWNLOAD_DIR}/%(id)s.%(ext)s',
+        'quiet': True,
+        'no_warnings': True,
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+        return ydl.prepare_filename(info)
 
 @app.on_message(filters.command(["ig", "instagram", "reel"]))
 async def download_instagram_video(client, message):
+    # 1. Validate Command Input
     if len(message.command) < 2:
-        await message.reply_text(
+        return await message.reply_text(
             "Pʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴛʜᴇ Iɴsᴛᴀɢʀᴀᴍ ʀᴇᴇʟ URL ᴀғᴛᴇʀ ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ"
         )
-        return
 
-    url = message.text.split()[1]
+    url = message.text.split(None, 1)[1]
 
+    # 2. Validate URL Format
     if not re.match(r"^(https?://)?(www\.)?(instagram\.com|instagr\.am)/.*$", url):
         return await message.reply_text(
             "Tʜᴇ ᴘʀᴏᴠɪᴅᴇᴅ URL ɪs ɴᴏᴛ ᴀ ᴠᴀʟɪᴅ Iɴsᴛᴀɢʀᴀᴍ URL 😅"
         )
 
-    a = await message.reply_text("ᴘʀᴏᴄᴇssɪɴɢ...")
-
-    api_url = f"https://insta-dl.hazex.workers.dev/?url={url}"
+    # 3. Status Update
+    status = await message.reply_text("⏳ ᴘʀᴏᴄᴇssɪɴɢ ʏᴏᴜʀ ʀᴇᴇʟ...")
 
     try:
-        response = requests.get(api_url)
-        result = response.json()
+        # 4. Download (Running blocking code in executor)
+        loop = asyncio.get_event_loop()
+        file_path = await loop.run_in_executor(None, download_video, url)
 
-        if not result["error"]:
-            data = result["result"]
-            video_url = data["url"]
-            duration = data["duration"]
-            quality = data["quality"]
-            ext = data["extension"]
-            size = data["formattedSize"]
+        # 5. Send Video
+        await status.edit("📤 ᴜᴘʟᴏᴀᴅɪɴɢ ᴛᴏ ᴛᴇʟᴇɢʀᴀᴍ...")
+        await message.reply_video(
+            video=file_path,
+            caption="✅ **Dᴏᴡɴʟᴏᴀᴅ Cᴏᴍᴘʟᴇᴛᴇᴅ!**"
+        )
 
-            caption = f"""
-Dᴜʀᴀᴛɪᴏɴ : {duration}
-Qᴜᴀʟɪᴛʏ : {quality}
-Tʏᴘᴇ : {ext}
-Sɪᴢᴇ : {size}
-"""
+        # 6. Cleanup
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        await status.delete()
 
-            await a.delete()
-            await message.reply_video(video_url, caption=caption)
-
-        else:
-            await a.edit("Fᴀɪʟᴇᴅ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ ʀᴇᴇʟ")
-
-    except Exception:
-        await a.edit("Eʀʀᴏʀ ᴡʜɪʟᴇ ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ ʀᴇᴇʟ")
-
+    except Exception as e:
+        await status.edit(f"❌ **Eʀʀᴏʀ:** {str(e)}")
 
 __MODULE__ = "Rᴇᴇʟ"
 
